@@ -26,7 +26,7 @@ TravelBlog.total_blogs += 1
 tb2 = TravelBlog()
 setattr(tb2, 'name', 'Италия')
 setattr(tb2, 'days', 5)
-TravelBlog.total_blogs += 1gi
+TravelBlog.total_blogs += 1
 
 print(tb1.__dict__)
 print(tb2.__dict__)
