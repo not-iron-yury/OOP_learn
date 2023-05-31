@@ -12,9 +12,11 @@ color: 'blue'
 объекта fig1 в одну строчку через пробел в порядке, указанном в задании.
 """
 
+
 class Figure:
     type_fig = 'ellipse'
     color = 'red'
+
 
 fig1 = Figure()
 setattr(fig1, 'start_pt', (10, 5))
