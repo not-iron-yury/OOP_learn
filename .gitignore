@@ -1,0 +1,10 @@
+venv/
+**/venv/
+.idea
+.gitattributes
+/logs/*
+!logs/.gitkeep
+/tmp
+*.swp
+/__pycache__/*
+.env-render
