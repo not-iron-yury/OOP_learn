@@ -56,6 +56,8 @@ class MotherBoard:
                 f"Память: {lst}"]
 
 
+mb = MotherBoard('maman500', CPU('cpu1', 50), Memory('mem1', 256), Memory('mem2', 256))
 
+print(mb.get_config())
 
 
