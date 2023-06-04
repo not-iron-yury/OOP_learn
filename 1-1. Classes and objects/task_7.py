@@ -14,3 +14,11 @@ class Gun:
     def shoot(self):
         self.flag = not self.flag
         print(('pif', 'paf')[self.flag])
+
+
+gun = Gun()
+
+gun.shoot()
+gun.shoot()
+gun.shoot()
+gun.shoot()
