@@ -46,21 +46,21 @@ class Pet:
 
 
 if __name__ == '__main__':
-    # print(Pet.first_pet())
-    # print(Pet.last_pet())
-    # print(Pet.num_of_pets())
-    #
-    # print('-' * 15)
-    #
-    # pet1 = Pet('Ratchet')
-    # pet2 = Pet('Clank')
-    # pet3 = Pet('Rivet')
-    # pet4 = Pet('Ratc')
-    # pet5 = Pet('Slank')
-    # pet6 = Pet('Boosy')
-    # print(Pet.first_pet().name)
-    # print(Pet.last_pet().name)
-    # print(Pet.num_of_pets())
+    print(Pet.first_pet())
+    print(Pet.last_pet())
+    print(Pet.num_of_pets())
+
+    print('-' * 15)
+
+    pet1 = Pet('Ratchet')
+    pet2 = Pet('Clank')
+    pet3 = Pet('Rivet')
+    pet4 = Pet('Ratc')
+    pet5 = Pet('Slank')
+    pet6 = Pet('Boosy')
+    print(Pet.first_pet().name)
+    print(Pet.last_pet().name)
+    print(Pet.num_of_pets())
 
     print('-' * 15)
     pet = Pet('Кемаль')
