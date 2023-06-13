@@ -30,6 +30,9 @@ class Config:
         self.version = '1.0.0'
 
 
+    def __del__(self):
+        __instance = None
+
 if __name__ == '__main__':
     config = Config()
     print(config.program_name)
