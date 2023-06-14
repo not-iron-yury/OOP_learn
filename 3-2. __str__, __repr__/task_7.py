@@ -31,7 +31,7 @@ model.query(id=1, fio='Sergey', old=33)
 
 class Model:
     def query(self, **kwargs):
-        self.__dict__ = kwargs
+        self.__dict__.update(kwargs)
 
     def __repr__(self):
         if self.__dict__:
