@@ -64,5 +64,5 @@ class Version_test(TestCase):
         self.assertEquals(Version('3').__repr__(), f"Version('3.0.0')")
         self.assertEquals(Version('3.0').__repr__(), f"Version('3.0.0')")
 
-
-
+    def test_notimplemented(self):
+        self.assertEquals(Version('3') == '2', False)
