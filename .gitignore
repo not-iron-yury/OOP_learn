@@ -7,4 +7,5 @@ venv/
 /tmp
 *.swp
 /__pycache__/*
+__pycache__*
 .env-render
