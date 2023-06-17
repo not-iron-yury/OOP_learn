@@ -1,24 +1,27 @@
-import unittest
+from unittest import TestCase, main
 
 from task_4 import Version
 
 
-class SquareEqSolverTestCase(unittest.TestCase):
+class Version_test(TestCase):
     def test_eq(self):
         self.assertEquals(Version('3'), Version('3.0'))
         self.assertEquals(Version('3'), Version('3.0.0'))
         self.assertEquals(Version('3.0'), Version('3.0.0'))
 
+    def test_ne(self):
         self.assertNotEquals(Version('3.1'), Version('3.0'))
         self.assertNotEquals(Version('3.5'), Version('3.0.0'))
 
+    def test_lt_le(self):
         self.assertFalse(Version('3.0.3') < Version('1.11.28'))
         self.assertFalse(Version('3.0.3') <= Version('1.11.28'))
 
+    def test_gt_ge(self):
         self.assertTrue(Version('3.0.3') > Version('1.11.28'))
         self.assertTrue(Version('3.0.3') >= Version('1.11.28'))
 
-    def test_sort(self):
+    def test_min_max(self):
         versions = [Version('162.5'), Version('68.3'), Version('173.8'), Version('108.9'), Version('159.6'),
                     Version('145.7'),
                     Version('187.6'), Version('137.7'), Version('33.7'), Version('22.4'), Version('199.4'),
