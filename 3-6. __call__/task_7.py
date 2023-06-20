@@ -34,8 +34,8 @@ class DateFormatter:
     def __init__(self, country_code):
         self.country_code = country_code
 
-    def __call__(self, date):
-        return date.strftime(self.__COUNTRY_CODE[self.country_code])
+    def __call__(self, d):
+        return d.strftime(self.__COUNTRY_CODE[self.country_code])
 
 
 if __name__ == '__main__':
@@ -47,4 +47,3 @@ if __name__ == '__main__':
 
     ca_format = DateFormatter('ca')
     print(ca_format(date(2022, 11, 7)))
-
