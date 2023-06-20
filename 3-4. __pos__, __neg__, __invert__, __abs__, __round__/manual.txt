@@ -1,0 +1,99 @@
+УНАРНЫЕ ОПЕРАТОРЫ И ФУНКЦИИ
+
+__pos__() — определяет поведение для унарного плюса
+__neg__() — определяет поведение для отрицания
+__invert__() — определяет поведение для инвертирования оператором
+
+!ВАЖНО. Унарные операторы возвращают новые объекты того же класса, а не изменяют исходный.
+!ВАЖНО. Из встроенных типов оператор инвертирования ~ определен лишь для типов int и bool.
+
+
+class Angle:
+	...
+
+    def __pos__(self):				унарный плюс
+        return Angle(self.value)
+
+    def __neg__(self):				отрицание
+        return Angle(-self.value)
+
+    def __invert__(self):			инвертироване
+        if 0 <= self.value:
+            return Angle(-self.value)
+        return Angle(self.value)
+
+
+angle = Angle(100)
+
+print(+angle)	# Angle(100)
+print(-angle)	# Angle(-100)
+print(~angle)	# Angle(-100)
+
+
+
+!ВАЖНО. Инвертирование работает с подвохом. В базовой реализации происходит следующее:
+для положительных чисел - увеличение на 1 и смена знака 	# print(~5) >> -6
+для отрицательных чисел - уменьшение на 1 и смена знака 	# print(~(-5))	>> 4
+
+
+for i in range(0, 5):
+    print(~(-i), i, ~i) # минус, исходное значение, плюс
+>> 		-1 0 -1				# с нулем есть дополнительный подвох, выполняется только +1 или -1 (без смены знака).
+		0 1 -2
+		1 2 -3
+		2 3 -4
+		3 4 -5
+
+Для булевых значений по сути тоже самое:
+print(~True)		# -2	True это 1, а дальше как с int, т.е. +1 и смена знака
+print(~False)		# -1	False это 0, а дальше -1 (и смена знака, если исходное значение != 0)
+print(~(-True))		# 0
+print(~(-False))	# -1
+
+
+-----------------------
+
+ФУНКЦИИ
+
+__abs__() — определяет поведение для встроенной функции abs()
+__round__() — определяет поведение для встроенной функции round() (принимает необязательный аргумент n - означает количество знаков после запятой)
+__trunc__() — определяет поведение для функции trunc() из модуля math
+__floor__() — определяет поведение для функции floor() из модуля math
+__ceil__() — определяет поведение для функции ceil() из модуля math
+
+
+import math
+
+class Angle:
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return f'Angle({self.value})'
+
+    def __abs__(self):
+        return Angle(abs(self.value))
+
+    def __round__(self, n=None):
+        if n is None:
+            return Angle(round(self.value))
+        return Angle(round(self.value, n))
+
+    def __trunc__(self):
+        return Angle(math.trunc(self.value))
+
+    def __floor__(self):
+        return Angle(math.floor(self.value))
+
+    def __ceil__(self):
+        return Angle(math.ceil(self.value))
+
+
+angle = Angle(-101.54)
+
+print(abs(angle))			# Angle(101.54)
+print(round(angle))			# Angle(-102)
+print(round(angle, 1))		# Angle(-101.5)
+print(math.trunc(angle))	# Angle(-101)
+print(math.floor(angle))	# Angle(-102)
+print(math.ceil(angle))		# Angle(-101)
