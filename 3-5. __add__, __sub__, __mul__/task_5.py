@@ -39,3 +39,45 @@
 
 Примечание 3. Никаких ограничений касательно реализации класса Queue нет, она может быть произвольной.
 """
+
+
+class Queue:
+    def __init__(self, *args):
+        self.stack = list(args)
+
+    def __str__(self):
+        return ' -> '.join(str(i) for i in self.stack)
+
+    def __eq__(self, other):
+        if isinstance(other, Queue):
+            return self.stack == other.stack
+        return NotImplemented
+
+    def add(self, *args):
+        self.stack += list(args)
+
+    def pop(self):
+        return self.stack.pop(0) if bool(self.stack) else None
+
+    def __add__(self, other):
+        if isinstance(other, Queue):
+            return Queue(*(self.stack + other.stack))
+        return NotImplemented
+
+    def __iadd__(self, other):
+        if isinstance(other, Queue):
+            self.stack += list(other.stack)
+            return self
+        return NotImplemented
+
+    def __rshift__(self, n):
+        if isinstance(n, int):
+            return Queue(*self.stack[n:])
+        return NotImplemented
+
+if __name__ == '__main__':
+    queue = Queue(1, 2, 3)
+    print(queue.__add__([]))
+    print(queue.__iadd__('bee'))
+    print(queue.__rshift__('geek'))
+
