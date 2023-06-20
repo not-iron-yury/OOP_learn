@@ -1,0 +1,154 @@
+СРАВНЕНИЕ ОБЪЕКТОВ
+
+Методы __eq__() и __ne__()
+equal (равно), not equal (не равно)
+==, !=
+
+
+Если в классе не определено, как будет происходить сравнение с помощью оператора ==,
+оно будет равносильно сравнению с помощью is. Т.е. сравнение на равенство по умолчанию является сравнением на идентичность.
+
+
+Когда мы сравниваем два объекта на равенство p1 == p2, Python автоматически вызывает p1.__eq__(p2)
+class Point:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+
+    def __eq__(self, other):	# создание возможности сравнивать объекты на равенство
+        if isinstance(other, Point):
+            return self.x == other.x and self.y == other.y
+        return NotImplemented			# если сравнение для объектов каких-либо типов не определено
+
+	def __ne__(self, other):	# создание возможности сравнивать объекты на неравенство p1.__ne__(p2)
+        if isinstance(other, Point):
+            return self.x != other.x or self.y != other.y
+        return True
+
+p1 = Point(1, 2)
+p2 = Point(1, 2)
+p3 = Point(3, 4)
+
+print(p1 == p2)		# True
+print(p1 == p3)		# False
+
+print(p1 != p2)		# False
+print(p1 != p3)		# True
+
+
+!ВАЖНО. Python автоматически реализует метод __ne__(), если метод __eq__() уже реализован.
+Определять метод __ne__() вручную стоит, если требуется иная реализация.
+
+!ВАЖНО. Если у класса не реализован метод __eq__() у объекта, и попытаться его вызвать,
+вместо значений True или False мы получим значение NotImplemented.
+Поэтому при реализации __eq__ в пользовательском классе, рекомендуется возвращать именно константу NotImplemented,
+если сравнение для объектов каких-либо типов не определено.
+
+!ВАЖНО. Обычно при переопределении магического метода __eq__() также переопределяют метод __hash__().
+-----------------------
+
+Методы __lt__() и __gt__()
+less than (меньше, чем), greater than (больше, чем)
+<, >
+
+Принцип аналогичен сравнению на равенство,
+т.е. сравнение p1 < p2 запускает метод p1.__lt__(p2), а p1 > p2 запускает p1.__gt__(p2)
+
+class Fruit:
+    def __init__(self, name, mass):
+        self.name = name
+        self.mass = mass
+
+    def __lt__(self, other):
+        if isinstance(other, Fruit):
+            return self.mass < other.mass
+        return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, Fruit):
+            return self.mass > other.mass
+        return NotImplemented
+
+fruit1 = Fruit('банан', 150)
+fruit2 = Fruit('яблоко', 180)
+
+print(fruit1 < fruit2)	# True
+print(fruit1 > fruit2)	# False
+print(fruit2 < fruit1)  # False
+print(fruit2 > fruit1)  # True
+
+-----------------------
+
+Методы __le__() и __ge__()
+less than or equal (меньше или равно), greater than or equal (больше или равно)
+<=, >=
+
+Аналогично предыдущим методам.
+Реализация одного сравнения автоматически закрывает вопрос реализации противоположного.
+
+
+!ВАЖНО. Если в классе реализовано сравнение на больше (меньше), то сравнение на меньше (больше) для объектов этого класса
+можно считать реализованным автоматически. Аналогично себя ведут и нестрогие сравнения на больше/меньше.
+
+class Fruit:
+    def __init__(self, name, mass):
+        self.name = name
+        self.mass = mass
+
+    def __lt__(self, other):
+        if isinstance(other, Fruit):
+            return self.mass < other.mass
+        return NotImplemented
+
+
+fruit1 = Fruit('банан', 150)
+fruit2 = Fruit('яблоко', 180)
+
+print(fruit1 < fruit2)	# True
+print(fruit1 > fruit2)	# False
+
+Дело в том, что выражение fruit1 > fruit2 приводит к вызову метода __gt__() у fruit1,
+который возвращает константу NotImplemented, так как метод не реализован.
+Далее Python пытается получить значение выражения fruit2 < fruit1, что приводит к вызову метода __lt__() у fruit2,
+и так как данный метод уже реализован, возвращается результат сравнения в виде значения False.
+
+Несмотря на данную особенность реализации, рекомендуется явно определять все методы сравнения вручную
+либо с помощью декоратора @total_ordering.
+
+-----------------------
+
+@total_ordering
+
+Декоратор класса @total_ordering из модуля functools позволяет ограничиться методами __eq__()
+и одним из методов __lt__(), __le__(), __gt__() или __ge__().
+Все недостающие методы декоратор определит и реализует самостоятельно.
+
+from functools import total_ordering
+
+@total_ordering
+class Fruit:
+    def __init__(self, name, mass):
+        self.name = name
+        self.mass = mass
+
+    def __eq__(self, other):
+        if isinstance(other, Fruit):
+            return self.mass == other.mass
+        return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, Fruit):
+            return self.mass < other.mass
+        return NotImplemented
+
+
+Т.е. в данном классе реализованны все возможные операции сравнения.
+
+!ВАЖНО. После реализации в классе операторов сравнения на больше/меньше появляется возможность
+сортировать экземпляры этого класса и выбирать среди них наименьший/наибольший.
+
+__eq__()	==	equal (равно)
+__ne__()	!=	not equal (не равно)
+__lt__()	<	less than (меньше, чем)
+__gt__()	>	greater than (больше, чем)
+__le__()	<=	less than or equal (меньше или равно)
+__ge__()	>=	greater than or equal (больше или равно)
