@@ -30,8 +30,10 @@ class SortKey:
     def __init__(self, *args):
         self.keys = args
 
-    def __call__(self, *args):
-        return 
+    def __call__(self, obj):
+        print(obj)  # внимание сюда
+        return ''
+
 
 
 class User:
@@ -45,5 +47,10 @@ class User:
 
 users = [User('Gvido', 67), User('Timur', 30), User('Arthur', 20)]
 
+# через lambda
+print(sorted(users, key=lambda user: user.age))
+print(sorted(users, key=lambda user: (user.name, user.age)))
+
+# через вызываемый объект
 print(sorted(users, key=SortKey('age')))            # [User(Arthur, 20), User(Timur, 30), User(Gvido, 67)]
 print(sorted(users, key=SortKey('name', 'age')))    # [User(Arthur, 20), User(Gvido, 67), User(Timur, 30)]
