@@ -107,7 +107,6 @@ print(greet('Кемаль'))		# ПРИВЕТ, КЕМАЛЬ
 -----------------------
 
 Сценарий 3. Магический метод __call__() может быть полезен в классах, чьи экземпляры часто изменяют своё состояние.
-Вызов экземпляра класса, может быть интуитивно понятным способом, для изменения состояние объекта.
 Т.е. вместо геттера, проперти и прочего, можно использовать лишь метод __call__ для переопределения значений атрибутов объекта.
 
 Пример:
@@ -131,8 +130,8 @@ print(point.x, point.y)		# 3 4
 
 -----------------------
 
+Примечание.
 Наличие метода __call__() у объекта сообщает является ли он вызываемым или нет.
-
 print(hasattr(int, '__call__')) 	# True
 print(hasattr(len, '__call__'))		# True
 print(hasattr(1, '__call__'))		# False
@@ -141,4 +140,54 @@ print(callable(int))				# True
 print(callable(len))				# True
 print(callable(1))					# False
 
------------------------
+----------------------------------------------
+
+Сценарий 4. Объект-компаратор
+
+Функця-компаратор описывает правило сортировки. Например, если нужно отсортировать список экземпляров некоторого класса
+на основе значений определенного атрибута. Для этого необходимо реализовать функцию, которая принимает в качестве аргумента
+этот экземпляр и возвращает значение необходимого атрибута.
+
+# ---- Вариант через лямбду ----
+class User:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def __repr__(self):
+        return f'User({self.name}, {self.age})'
+
+
+users = [User('Gvido', 67), User('Timur', 30), User('Arthur', 20)]
+
+print(sorted(users, key=lambda user: user.age))		# [User(Arthur, 20), User(Timur, 30), User(Gvido, 67)]
+
+
+
+# ---- Вариант через класс ----
+class SortKey:
+    def __init__(self, *args):		# сюда падают названия атрибутов, например 'name', 'age' и т.д.
+        self.attributes = args
+
+    def __call__(self, obj):		# сюда падают объекты класса User
+        return [getattr(obj, i) for i in self.attributes]
+
+
+class User:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def __repr__(self):
+        return f'User({self.name}, {self.age})'
+
+
+users = [User('Gvido', 67), User('Timur', 30), User('Arthur', 20)]
+
+print(sorted(users, key=SortKey('age')))            # сортировка на основе атрибута age
+print(sorted(users, key=SortKey('name', 'age')))    # сортировка на основе атрибута name, а затем age
+
+
+!ВАЖНО.
+Сначала key=SortKey('name') это создание объекта SortKey. А потом его вызов с передачей ему уже не строки 'name', а объекта User.
+key отраатывает несколько раз, и через хитрую жопу.
