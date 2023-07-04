@@ -111,8 +111,8 @@ class Order:
         self.cart = list(cart)          # список покупок
         self.customer = customer        # покупатель
 
-    def __iter__(self):
-        yield from self.cart            # либо return (elem for elem in self.cart)
+    def __iter__(self):                 # итерируемость объекта
+        yield from self.cart            # или генераторное выражение -> return (elem for elem in self.cart)
 
 
 order = Order(['банан', 'яблоко', 'лимон'], 'Элой')
