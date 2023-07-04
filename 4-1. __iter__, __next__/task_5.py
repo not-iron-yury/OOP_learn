@@ -28,19 +28,18 @@ Junior-разработчики должны быть представлены �
 
 class DevelopmentTeam:
     def __init__(self):
-        self.junior = []
-        self.senior = []
+        self._junior = []
+        self._senior = []
 
     def add_junior(self, *args):
-        self.junior += args
+        self._junior += args
 
     def add_senior(self, *args):
-        self.senior += args
+        self._senior += args
 
     def __iter__(self):
-        result = [(name, 'junior') for name in self.junior] \
-                 + [(name, 'senior') for name in self.senior]
-        yield from result
+        yield from [(name, 'junior') for name in self._junior]
+        yield from [(name, 'senior') for name in self._senior]
 
 
 if __name__ == '__main__':
@@ -50,3 +49,12 @@ if __name__ == '__main__':
     beegeek.add_junior('Arthur', 'Valery')
     beegeek.add_senior('Gvido')
     print(*beegeek, sep='\n')
+
+    print('-'*15)
+
+    smart_monkey = DevelopmentTeam()
+
+    smart_monkey.add_senior('Gvido', 'Alan')
+    smart_monkey.add_junior('Denis')
+
+    print(list(smart_monkey))
