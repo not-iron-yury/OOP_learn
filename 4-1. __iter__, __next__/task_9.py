@@ -33,12 +33,13 @@ class Peekable:
         return next(self.iterable)
 
     def peek(self, default=''):
-        res = tuple(copy(self.iterable))
-        if res:
-            return res[0]
-        if default != '':
-            return default
-        raise StopIteration
+        try:
+            return tuple(copy(self.iterable))[0]
+        except IndexError:
+            if default != '':
+                return default
+            raise StopIteration
+
 
 
 if __name__ == '__main__':
