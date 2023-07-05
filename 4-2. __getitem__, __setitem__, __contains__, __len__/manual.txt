@@ -1,0 +1,253 @@
+СОЗДАНИЕ СОБСТВЕННЫХ ПОСЛЕДОВАТЕЛЬНОСТЕЙ
+
+Для реализации протокола неизменяемой последовательности необходимо определить следующие магические методы:
+
+__len__()		определяет поведение при передаче в функцию len(), возвращает количество элементов в последовательности
+__getitem__()	определяет поведение при доступе к элементу, используя синтаксис self[key]
+__iter__()		определяет поведение при передаче в функцию iter(), возвращает итератор для последовательности
+__contains__()	определяет поведение при проверке на принадлежность с помощью оператора in (not in)
+__reversed__()	определяет поведение при вызове метода reversed()
+
+
+!ВАЖНО. Метод __contains__() можно считать как частью протокола последовательности, так и нет. Если метод не определен,
+Python самостоятельно перебирает всю последовательность и возвращает True/False, если находит или не находит искомый элемент.
+Т.е. метод не обязателен к реализации, если его логика стандартная.
+
+!ВАЖНО. Метод __iter__() также может быть опущен, т.к. как если у объекта есть длина и возможность
+обращаться к его элементам по индексам, то этого достаточно, чтобы проитерироваться по нему вручную.
+Таким образом, если в классе определены методы __len__() и __getitem__(), то его экземпляры уже можно назвать последовательностью.
+
+
+-----------------------
+
+НЕИЗМЕНЯЕМАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ
+
+class Order:
+    def __init__(self, cart, customer):
+        self.cart = list(cart)                  # список покупок
+        self.customer = customer                # имя покупателя
+
+    def __len__(self):
+        return len(self.cart)
+
+    def __getitem__(self, key):					# key этой индекс товара в последовательности
+        if not isinstance(key, int):
+            raise TypeError('Индекс должен быть целым числом')
+        if key < 0 or key >= len(self.cart):
+            raise IndexError('Неверный индекс')
+        return self.cart[key]
+
+    def __contains__(self, item):				# item это объект, наличие которого требуется проверить
+        return item in self.cart
+
+    def __iter__(self):
+        yield from self.cart
+
+
+order = Order(['банан', 'яблоко', 'лимон'], 'Кемаль')
+
+print(len(order))			# 3
+print(order[1])				# яблоко
+print('дыня' in order)		# False
+print('лимон' in order)		# True
+print(*order, sep=', ')		# банан, яблоко, лимон
+
+
+-----------------------
+
+ИЗМЕНЯЕМАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ
+
+Для реализации протокола изменяемой последовательности необходимо к вышеуказанным методам добавить следующие магические методы:
+__setitem__() — определяет поведение при присваивании значения элементу, используя синтаксис self[key] = value
+__delitem__() — определяет поведение при удалении элемента с помощью оператора del
+
+
+
+class Order:
+    def __init__(self, cart, customer):
+        self.cart = list(cart)
+        self.customer = customer
+
+    def check_key(self, key):                   # отдельный метод для проверки индекса на корректность
+        if not isinstance(key, int):
+            raise TypeError('Индекс должен быть целым числом')
+        if key < 0 or key >= len(self.cart):
+            raise IndexError('Неверный индекс')
+        return key
+
+    def __len__(self):
+        return len(self.cart)
+
+    def __getitem__(self, key):
+        key = self.check_key(key)
+        return self.cart[key]
+
+    def __contains__(self, item):
+        return item in self.cart
+
+    def __iter__(self):
+        yield from self.cart
+
+    def __setitem__(self, key, value):		# сперва принимает индекс (key), а после устанавливаемое значение (value)
+        key = self.check_key(key)
+        self.cart[key] = value
+
+    def __delitem__(self, key):
+        key = self.check_key(key)
+        del self.cart[key]
+
+
+order = Order(['банан', 'яблоко', 'лимон'], 'Кемаль')
+
+print(*order, sep=', ')		# банан, яблоко, лимон
+
+order[1] = 'ананас'
+del order[2]
+
+print(*order, sep=', ')		# банан, ананас
+
+
+----------------------------------------------
+
+
+СРЕЗЫ ПОСЛЕДОВАТЕЛЬНОСТЕЙ
+
+Встроенная функция slice() возвращает специальный объект типа slice. Напоминает объект типа range (тоже имеет start, end, step).
+Синтаксис создания объектов типа slice полностью совпадает с синтаксисом создания range объектов.
+
+slice1 = slice(10)          	# start=None, stop=10, step=None
+slice2 = slice(1, 10)       	# start=1, stop=10, step=None
+slice3 = slice(1, 10, 2)    	# start=1, stop=10, step=2
+
+print(slice1)		# slice(None, 10, None)
+print(slice2)		# slice(1, 10, None)
+print(slice3)		# slice(1, 10, 2)
+
+-----------------------
+
+У каждого slice объекта имеются атрибуты start, stop и step.
+
+slice1 = slice(10)                              # start=None, stop=10, step=None
+slice2 = slice(1, 10)                           # start=1, stop=10, step=None
+slice3 = slice(1, 10, 2)                        # start=1, stop=10, step=2
+
+print(slice1.start, slice1.stop, slice1.step)	# None 10 None
+print(slice2.start, slice2.stop, slice2.step)	# 1 10 None
+print(slice3.start, slice3.stop, slice3.step)	# 1 10 2
+
+-----------------------
+
+Чтобы реализовать возможность использовать срезы, требуется лишь обработать ситуацию, когда в магические методы,
+работающие с индексами (__getitem__(), __setitem__(), __delitem__()), передается объект типа slice.
+
+
+class Order:
+    def __init__(self, cart, customer):
+        self.cart = list(cart)
+        self.customer = customer
+
+    def __len__(self):
+        return len(self.cart)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):							# key должен быть объектом slice
+            return Order(self.cart[key], self.customer)
+        if not isinstance(key, int):
+            raise TypeError('Индекс должен быть целым числом')
+        if key < 0 or key >= len(self.cart):
+            raise IndexError('Неверный индекс')
+        return self.cart[key]
+
+    def __contains__(self, item):
+        return item in self.cart
+
+    def __iter__(self):
+        yield from self.cart
+
+
+order1 = Order(['банан', 'яблоко', 'лимон', 'дыня', 'грейпфрут'], 'Кемаль')
+
+order2 = order1[1:]
+order3 = order1[2:4]										# срез экземпляра класса Order создает объект slice
+order4 = order1[1:5:2]
+
+print(*order2, sep=', ')		# яблоко, лимон, дыня, грейпфрут
+print(*order3, sep=', ')		# лимон, дыня
+print(*order4, sep=', ')		# яблоко, дыня
+
+-----------------------
+
+indices()
+Удобное представление объекта slice в виде кортежа.
+Метод принимает в качестве аргумента длину последовательности, к которой будет применяться срез,
+и возвращает кортеж из трех целых чисел, представляющих конечные значения start, stop и step.
+
+Приведенный ниже код:
+
+slice1 = slice(10)                              # start=None, stop=10, step=None
+slice2 = slice(1, 10)                           # start=1, stop=10, step=None
+slice3 = slice(1, 10, 2)                        # start=1, stop=10, step=2
+
+print(slice1)					# slice(None, 10, None)
+print(slice1.indices(5))		# (0, 5, 1)
+print(slice2.indices(50))		# (1, 10, 1)
+print(slice3.indices(8))		# (1, 8, 2)
+
+----------------------------------------------
+
+
+Чтобы определить поведение при передаче в функцию reversed(), используется магический метод __reversed__().
+	...
+    def __reversed__(self):
+        return reversed(self.cart)
+
+
+order = Order(['банан', 'яблоко', 'лимон'], 'Кемаль')
+
+print(*order, sep=', ')					# банан, яблоко, лимон
+print(*reversed(order), sep=', ')		# лимон, яблоко, банан
+
+----------------------------------------------
+
+
+Если в классе определен магический метод __len__(), но не определен магический метод __bool__(),
+то именно __len__() будет использоваться для всех логических приведений.
+
+class MyClass:
+    def __len__(self):
+        return 0
+
+
+print(bool(MyClass()))	# False
+
+
+----------------------------------------------
+
+Реализовав в классе магические методы __getitem__() и __len__() можно передавать его экземпляры в функцию choice() модуля random.
+
+from random import choice
+
+class Order:
+    def __init__(self, cart, customer):
+        self.cart = list(cart)
+        self.customer = customer
+
+    def __len__(self):
+        return len(self.cart)
+
+    def __getitem__(self, key):
+        if not isinstance(key, int):
+            raise TypeError('Индекс должен быть целым числом')
+        if key < 0 or key >= len(self.cart):
+            raise IndexError('Неверный индекс')
+        return self.cart[key]
+
+    def __iter__(self):
+        print('Вызов метода __iter__()')
+        yield from self.cart
+
+
+order = Order(['банан', 'яблоко', 'лимон'], 'Кемаль')
+
+print(choice(order))
+print(choice(order))
