@@ -53,7 +53,7 @@ with CustomContextManager() as manager:
 	string index out of range					# exc_value	(объект исключения)
 	<traceback object at 0x000001E5CBB57500>	# exc_tb (информация о трассировке)
 
-	IndexError: string index out of range		# в самом конце возбуждается исключение
+	IndexError: string index out of range	    # в самом конце падает исключение, можно заблокировать в __exit__ (вернув True)
 
 
 Оператор with сначала создается экземпляр класса CustomContextManager, а затем вызывается
