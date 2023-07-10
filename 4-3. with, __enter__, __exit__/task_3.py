@@ -16,6 +16,7 @@
 __enter__() и __exit__(). Реализация же протокола может быть произвольной.
 """
 
+
 class ReadableTextFile:
     def __init__(self, filename):
         self.filename = filename
@@ -26,9 +27,6 @@ class ReadableTextFile:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         file.close()
-
-
-
 
 
 if __name__ == '__main__':
