@@ -32,9 +32,10 @@
 Гарантируется, что реализованный класс используется только с корректными данными.
 """
 
+
 class MutableString:
     def __init__(self, string=''):
-        self.string = list(string) or []
+        self.string = list(string)
 
     def lower(self):
         self.string = list(map(str.lower, self.string))
@@ -49,16 +50,73 @@ class MutableString:
         return ''.join(self.string)
 
     def __repr__(self):
-        return f"MutableString('{''.join(self.string)}')"
+        return f"MutableString('{self.__str__()}')"
 
+    def __len__(self):
+        return len(self.string)
 
+    def __check_index(self, index):
+        len_ = self.__len__()
+        return -(len_ + 1) < index < len_
 
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return MutableString(self.__str__()[index])
+        elif self.__check_index(index):
+            return self.string[index]
+        raise IndexError
+
+    def __setitem__(self, index, value):
+        self.string[index] = value
+        self.string = list(self.__str__())
+
+    def __delitem__(self, index):
+        if isinstance(index, slice):
+            del self.string[index]
+        elif self.__check_index(index):
+            del self.string[index]
+
+    def __add__(self, other):
+        if isinstance(other, MutableString):
+            return MutableString(self.__str__() + other.__str__())
 
 
 if __name__ == '__main__':
-    mutablestring = MutableString('beegeek')
+    # mutablestring = MutableString('beegeek')
+    #
+    # s1 = mutablestring[2:]
+    # s2 = mutablestring[:5]
+    # s3 = mutablestring[2:5:2]
+    #
+    # print(s1, type(s1))
+    # print(s2, type(s2))
+    # print(s3, type(s3))
 
-    print(*mutablestring)
-    print(str(mutablestring))
-    print(repr(mutablestring))
-    print(len(mutablestring))
+    mutablestring = MutableString('beegeek')
+    print(mutablestring)
+    mutablestring[3] = 'ab'
+    print(list(mutablestring))
+
+    mutablestring[2:] = 'geek'
+    print(list(mutablestring))
+    #
+    # mutablestring = MutableString('beegeek')
+    #
+    # del mutablestring[2:5]
+    # del mutablestring[1:5:2]
+    # print(mutablestring)
+    #
+    # mutablestring = MutableString('beegeek')
+    # print(mutablestring[-7])
+    # mutablestring[3] = 'X'
+    # print(*mutablestring)
+    # print(str(mutablestring))
+    # print(repr(mutablestring))
+    # print(len(mutablestring))
+    # print(mutablestring[2:5])
+    #
+    # mutablestring1 = MutableString('bee')
+    # mutablestring2 = MutableString('geek')
+    #
+    # print(mutablestring1 + mutablestring2)
+    # print(mutablestring2 + mutablestring1)
