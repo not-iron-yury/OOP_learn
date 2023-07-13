@@ -1,0 +1,286 @@
+@contextmanager
+
+Декоратор @contextmanager из модуля contextlib позволяет создать контекстный менеджер на основе функции,
+автоматически предоставляя оба требуемых метода __enter__() и __exit__().
+
+Через класс:
+
+class CustomContextManager:
+    def __enter__(self):
+        print('Вход в контекстый менеджер...')
+        return 'Python generation!'
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print('Выход из контекстного менеджера...')
+
+------------
+Через декоратор:
+
+from contextlib import contextmanager
+
+@contextmanager
+def custom_context_manager():
+    print('Вход в контекстый менеджер...')		# соответствует методу __enter__()
+    yield 'Python generation!'					# возвращаемое значение метода __enter__()
+    print('Выход из контекстного менеджера...')	# соответствует методу __exit__()
+
+
+Код до оператора yield выполняется, когда поток выполнения входит в контекст и соответствует методу __enter__().
+Значение, которое возвращает оператор yield является возвращаемым значением метода __enter__().
+Наконец, код после оператора yield выполняется, когда поток выполнения выходит из контекста,
+что соответствует методу __exit__().
+
+----------------------
+
+Декоратор @contextmanager сводит воедино три совершенно разных механизма: декоратор функции, генератор и оператор with.
+
+Обычно с помощью декоратора @contextmanager создают относительно несложные контекстные менеджеры.
+
+Функция, к которой применяется декоратор @contextmanager, обязательно должна иметь инструкцию yield,
+в противном случае при попытке воспользоваться реализованной функцией как контекстным менеджером будет возбуждено исключение.
+
+Контекстные менеджеры созданные с помощью декоратора @contextmanager являются одноразовыми, их нужно создавать заново каждый раз,
+когда необходимо их использовать. Повторное использование такого контекстного менеджера приводит к AttributeError.
+
+Процесс создания контекстных менеджеров на основе функций похож на процесс создания итераторов с помощью генераторных функций.
+
+
+Внутри одного блока with могут использоваться несколько контекстных менеджеров.
+
+from contextlib import contextmanager
+
+@contextmanager
+def greeter(name):
+    print('Привет,', name)
+    yield name
+    print('Пока,', name)
+
+with greeter('Илон') as manager1, greeter('Гвидо') as manager2, greeter('Хидео') as manager3:
+    print(manager1, manager2, manager3)
+
+----------------------------------------------
+
+ОБРАБОТКА ИСКЛЮЧЕНИЙ
+внутри блока with
+
+Для обработки исключений при использовании контекстных менеджеров на основе классов, используется метод __exit__(),
+который возвращает логический флаг (тип bool), указывающий на то, следует ли подавить возбужденное исключение.
+
+Для обработки исключений в контекстных менеджерах на основе функций используют конструкцию try-except-finally.
+
+-----------------------
+
+Через class
+
+class CustomContextManager:
+    def __enter__(self):
+        print('Вход в контекстый менеджер...')
+        return 'Python generation!'
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        print('Выход из контекстного менеджера...')
+        if isinstance(exc_value, IndexError):
+            print(f'Тип возникшего исключения: {exc_type}')
+            print(f'Текст исключения: {exc_value}')
+            return True                                 # подавляем возбужденное исключение IndexError
+        return False
+
+
+------------
+Через декоратор:
+
+from contextlib import contextmanager
+
+@contextmanager
+def custom_context_manager():
+    try:
+        print('Вход в контекстый менеджер...')
+        yield 'Python generation!'
+    except IndexError as error:			# исключение которое подавляется
+        print(f'Тип возбужденного исключения: {type(error)}')
+        print(f'Текст исключения: {error}')
+    except:
+        raise          					 # остальные исключения, которые не подавляются (должны возбуждаться повторно)
+    finally:
+        print('Выход из контекстного менеджера...')
+
+
+
+Для обработки определенного типа исключения внутри блока with, нужно добавить соответствующий блок except <тип исключения>,
+в котором обработывается возбужденное исключение, что соответствует инструкции return True метода __exit__().
+
+В случае если возникшее исключение не требуется обрабатывать, оно должно быть возбуждено заново с помощью оператора raise,
+что соответствует инструкции return False метода __exit__().
+
+
+----------------------------------------------
+
+ПРИМЕРЫ СОЗДАНИЯ КОНТЕКСТНЫХ МЕНЕДЖЕРОВ
+
+
+Пример 1.
+Контекстный менеджер Trace выводит информацию перед входом в блок with и после выхода из блока with,
+включая информацию об исключении, если оно было возбуждено во время выполнения блока with.
+
+class Trace:
+    def __enter__(self):
+        print('Начало выполнения блока with')
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_value:
+            print(f'Во время выполнения блока with возникло исключение {exc_value}')
+        print('Конец выполнения блока with')
+        return True                           # обрабатываем все типы исключений
+С помощью декоратора @contextmanager контекстный менеджер Trace выглядит так:
+
+-----------
+
+from contextlib import contextmanager
+
+@contextmanager
+def trace():
+    try:
+        print('Начало выполнения блока with')
+        yield
+    except Exception as error:
+        print(f'Во время выполнения блока with возникло исключение {error}')
+    finally:
+        print('Конец выполнения блока with')
+
+Приведенный ниже код:
+
+with trace():
+    print('Python generation!')
+
+print()
+
+with trace():
+    print('Python generation!')
+    print(1 / 0)
+
+выводит:
+
+Начало выполнения блока with
+Python generation!
+Конец выполнения блока with
+
+Начало выполнения блока with
+Python generation!
+Во время выполнения блока with возникло исключение division by zero
+Конец выполнения блока with
+
+-----------------------
+
+Пример 2.
+Контекстный менеджер WritableTextFile позволяет работать с открытыми для записи текстовыми файлами в кодировке UTF-8:
+
+class WritableTextFile:
+    def __init__(self, path):
+        self.path = path
+
+    def __enter__(self):
+        self.file = open(self.path, mode='w', encoding='utf-8')
+        return self.file
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.file.close()
+
+-----------
+
+С помощью декоратора @contextmanager контекстный менеджер WritableTextFile выглядит так:
+
+from contextlib import contextmanager
+
+@contextmanager
+def writable_text_file(path):
+    file = open(path, mode='w', encoding='utf-8')
+    yield file
+    file.close()
+
+Приведенный ниже код:
+
+with writable_text_file('output.txt') as file:
+    file.write('Python generation!')
+
+создает текстовый файл output.txt в кодировке UTF-8 с содержимым Python generation!.
+
+-----------------------
+
+Пример 3.
+Контекстный менеджер RedirectedStdout временно перенаправляет стандартный вывод sys.stdout на некоторый файл на диске:
+
+import sys
+
+class RedirectedStdout:
+    def __init__(self, new_output):
+        self.new_output = new_output
+
+    def __enter__(self):
+        self.standart_output = sys.stdout
+        sys.stdout = self.new_output
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        sys.stdout = self.standart_output
+
+С помощью декоратора @contextmanager контекстный менеджер RedirectedStdout выглядит так:
+
+------------
+
+import sys
+from contextlib import contextmanager
+
+@contextmanager
+def redirected_stdout(new_output):
+    standart_output = sys.stdout
+    sys.stdout = new_output
+    yield
+    sys.stdout = standart_output
+
+Приведенный ниже код:
+
+with open('output.txt', mode='w', encoding='utf-8') as file:
+    with redirected_stdout(file):
+        print('Python generation!')
+    print('Возврат к стандартному потоку вывода')
+
+создает текстовый файл output.txt в кодировке UTF-8 с содержимым Python generation!,
+а также выводит текст Возврат к стандартному потоку вывода.
+
+-----------------------
+
+Пример 4. Контекстный менеджер Timer позволяет измерять время выполнения блока кода:
+
+from time import perf_counter
+
+class Timer:
+    def __enter__(self):
+        self.start = perf_counter()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.elapsed = perf_counter() - self.start
+С помощью декоратора @contextmanager контекстный менеджер Timer выглядит так:
+
+-----------
+
+from time import perf_counter
+from contextlib import contextmanager
+
+@contextmanager
+def timer():
+    start = perf_counter()
+    yield
+    end = perf_counter()
+    elapsed = end - start
+    print('Затраченное время:', elapsed)
+
+Приведенный ниже код:
+
+from time import sleep
+
+with timer():
+    sleep(0.7)
+    sleep(1.5)
+выводит (время может отличаться):
+
+Затраченное время: 2.208050799788907
